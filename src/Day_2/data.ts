@@ -1,4 +1,4 @@
-const data: string = `Game 1: 6 green, 3 blue; 3 red, 1 green; 4 green, 3 red, 5 blue
+export const data: string = `Game 1: 6 green, 3 blue; 3 red, 1 green; 4 green, 3 red, 5 blue
 Game 2: 2 red, 7 green; 13 green, 2 blue, 4 red; 4 green, 5 red, 1 blue; 1 blue, 9 red, 1 green
 Game 3: 2 green, 3 blue, 9 red; 3 red, 2 green; 6 red, 4 blue; 6 red
 Game 4: 9 red, 3 green; 3 green, 8 red, 6 blue; 12 blue, 4 green, 6 red; 4 green, 18 blue, 11 red; 9 blue, 2 green, 3 red; 14 blue, 7 red
