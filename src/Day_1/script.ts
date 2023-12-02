@@ -66,15 +66,15 @@ function secondTask(data: string) {
   // word twice, but with a number in between. This way, we can simply look for numbers
   // and use the first and last one to construct the number
   const validWords = {
-    one: "one1one",
-    two: "two2two",
-    three: "three3three",
-    four: "four4four",
-    five: "five5five",
-    six: "six6six",
-    seven: "seven7seven",
-    eight: "eight8eight",
-    nine: "nine9nine",
+    one: "o1e",
+    two: "t2o",
+    three: "t3e",
+    four: "f4r",
+    five: "f5e",
+    six: "s6x",
+    seven: "s7n",
+    eight: "e8t",
+    nine: "n9e",
   };
 
   const dataArray = data.split("\n");
