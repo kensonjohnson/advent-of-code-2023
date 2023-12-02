@@ -1,4 +1,4 @@
-export const data = `nine92jnhgqzctpgbcbpz
+export const data: string = `nine92jnhgqzctpgbcbpz
 sevensddvc73three
 9986fmfqhdmq8
 7onexmxbzllfqb
