@@ -48,3 +48,115 @@ Determine which games would have been possible if the bag had been loaded with o
 12 red cubes, 13 green cubes, and 14 blue cubes. What is the sum of the IDs of those 
 games?
 */
+
+import { data } from "./data";
+
+function firstTask(data: string) {
+  const dataArray = data.split("\n");
+  const cubes = {
+    red: 12,
+    green: 13,
+    blue: 14,
+  };
+  let sum = 0;
+
+  dataArray.forEach((game) => {
+    // Parse all of our game data
+    const gameData = game.split(":");
+    const gameID = gameData[0].split(" ")[1];
+    const gameRounds = gameData[1].split(";");
+
+    // Default to games being possible
+    let isPossible = true;
+    gameRounds.forEach((round) => {
+      // Parse all of our data for this round
+      const cubeData = round.split(",");
+
+      cubeData.forEach((cube) => {
+        const currentCube = cube.trim().split(" ");
+        const cubeColor = currentCube[1];
+        const cubeCount = parseInt(currentCube[0]);
+
+        if (cubes[cubeColor as keyof typeof cubes] < cubeCount) {
+          isPossible = false;
+        }
+      });
+    });
+
+    if (isPossible) {
+      sum += parseInt(gameID);
+    }
+  });
+
+  return sum;
+}
+
+// console.log(firstTask(data));
+
+/*
+The Elf says they've stopped producing snow because they aren't getting any water! He 
+isn't sure why the water stopped; however, he can show you how to get to the water source 
+to check it out for yourself. It's just up ahead!
+
+As you continue your walk, the Elf poses a second question: in each game you played, what 
+is the fewest number of cubes of each color that could have been in the bag to make the 
+game possible?
+
+Again consider the example games from earlier:
+
+Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green
+Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
+Game 3: 8 green, 6 blue, 20 red; 5 blue, 4 red, 13 green; 5 green, 1 red
+Game 4: 1 green, 3 red, 6 blue; 3 green, 6 red; 3 green, 15 blue, 14 red
+Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green
+
+- In game 1, the game could have been played with as few as 4 red, 2 green, and 6 blue cubes. 
+  If any color had even one fewer cube, the game would have been impossible.
+- Game 2 could have been played with a minimum of 1 red, 3 green, and 4 blue cubes.
+- Game 3 must have been played with at least 20 red, 13 green, and 6 blue cubes.
+- Game 4 required at least 14 red, 3 green, and 15 blue cubes.
+- Game 5 needed no fewer than 6 red, 3 green, and 2 blue cubes in the bag.
+
+The power of a set of cubes is equal to the numbers of red, green, and blue cubes multiplied 
+together. The power of the minimum set of cubes in game 1 is 48. In games 2-5 it was 12, 
+1560, 630, and 36, respectively. Adding up these five powers produces the sum 2286.
+
+For each game, find the minimum set of cubes that must have been present. What is the sum 
+of the power of these sets?
+*/
+
+function secondTask(data: string) {
+  const dataArray = data.split("\n");
+  let sum = 0;
+
+  dataArray.forEach((game) => {
+    // We no longer care about the game ID
+    const gameData = game.split(":")[1];
+    // We also no longer care about the rounds,
+    // we just want all of the cubes, regarless of round
+    const cubeData = gameData.replaceAll(";", ",").split(",");
+    // We'll use this to store our cube counts
+    const maxCounts = {
+      red: 0,
+      green: 0,
+      blue: 0,
+    };
+    cubeData.forEach((cube) => {
+      const currentCube = cube.trim().split(" ");
+      const cubeColor = currentCube[1];
+      const cubeCount = parseInt(currentCube[0]);
+
+      if (maxCounts[cubeColor as keyof typeof maxCounts] < cubeCount) {
+        maxCounts[cubeColor as keyof typeof maxCounts] = cubeCount;
+      }
+    });
+
+    // Now that we have our max counts, we can calculate the power
+    const power = maxCounts.red * maxCounts.green * maxCounts.blue;
+    sum += power;
+  });
+
+  return sum;
+}
+
+console.log(secondTask(data));
