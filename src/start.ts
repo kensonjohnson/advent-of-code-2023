@@ -1,2 +1,3 @@
-// import "./Day_1/script";
-import "./Day_2/script";
+// import "./Day_01/script";
+// import "./Day_02/script";
+import "./Day_03/script";
