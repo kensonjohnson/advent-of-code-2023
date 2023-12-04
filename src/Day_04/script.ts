@@ -163,7 +163,6 @@ function secondTask(data: string) {
   let sum = 0;
 
   dataArray.forEach((_, index) => {
-    console.log("Index: ", index, "Number: ", dataMap[index] || "0");
     const numberOfCurrentScratchCard = dataMap[index] || 0;
     sum += numberOfCurrentScratchCard;
   });
