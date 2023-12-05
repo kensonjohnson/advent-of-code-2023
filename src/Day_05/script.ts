@@ -210,25 +210,29 @@ function secondTask(data: string) {
     seedPairs.push([seedsInput[i], seedsInput[i] + seedsInput[i + 1] - 1]);
   }
 
-  const maps = lines.map((line) => {
+  const almanacs = lines.map((line) => {
     return line
       .trim()
       .split("\n")
+      .slice(1)
       .map((line) => line.trim().split(" ").map(Number)) as [
       number,
       number,
       number
     ][];
   });
-
-  for (const ranges of maps) {
+  for (const ranges of almanacs) {
+    // Once we have the ranges, we can filter the seed pairs to only include the ones that are in the ranges
     const newPairs = [];
-
+    // We search through each seed pair and check if it is in any of the ranges
     for (let [start, end] of seedPairs) {
+      // We search through each range and find valid ranges
       while (start <= end) {
-        const range = ranges.find(
-          (range) => start >= range[1] && start <= range[1] + range[2] - 1
-        );
+        // We find the start of the next valid range or keep looking
+        const range = ranges.find((range) => {
+          return start >= range[1] && start <= range[1] + range[2] - 1;
+        });
+        // If we found a valid range, we add it to the new pairs and move the start to the end of the range
         if (range) {
           const rangeEnd = Math.min(end, range[1] + range[2] - 1);
           newPairs.push([
@@ -241,7 +245,6 @@ function secondTask(data: string) {
         }
       }
     }
-
     seedPairs = newPairs;
   }
 
