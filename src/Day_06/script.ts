@@ -72,4 +72,85 @@ if you multiply these numbers together?
 
 import { data } from "./data";
 
-function firstTask(data: string) {}
+const testData = `Time:      7  15   30
+Distance:  9  40  200`;
+
+function firstTask(data: string) {
+  const [time, distance] = data
+    .split("\n")
+    .map((line) => line.split(/\s+/).slice(1).map(Number));
+
+  const pairs = time.map((t, i) => [t, distance[i]]);
+  const winningTimes = [];
+  for (const [timeLimit, currentBestDistance] of pairs) {
+    let chargeTime = 0;
+    let timeLeft = timeLimit;
+    let distanceTraveled = 0;
+    const localWinningTimes = [];
+    while (chargeTime < timeLimit) {
+      chargeTime++;
+      timeLeft = timeLimit - chargeTime;
+      distanceTraveled = chargeTime * timeLeft;
+      if (distanceTraveled > currentBestDistance) {
+        localWinningTimes.push(chargeTime);
+      }
+    }
+    if (localWinningTimes.length) {
+      winningTimes.push(localWinningTimes);
+    }
+  }
+
+  let possiblePurmations = 1;
+  for (const winningTime of winningTimes) {
+    possiblePurmations *= winningTime.length;
+  }
+
+  return possiblePurmations;
+}
+
+console.log("Task One Answer: ", firstTask(data));
+
+/*
+As the race is about to start, you realize the piece of paper with race times and record
+distances you got earlier actually just has very bad kerning. 
+There's really only one race - ignore the spaces between the numbers on each line.
+
+So, the example from before:
+
+Time:      7  15   30
+Distance:  9  40  200
+...now instead means this:
+
+Time:      71530
+Distance:  940200
+Now, you have to figure out how many ways there are to win this single race. In this example, 
+the race lasts for 71530 milliseconds and the record distance you need to beat is 940200 
+millimeters. You could hold the button anywhere from 14 to 71516 milliseconds and beat the 
+record, a total of 71503 ways!
+
+How many ways can you beat the record in this one much longer race?
+*/
+
+function secondTask(data: string) {
+  const [time, distance] = data.split("\n").map((line) => {
+    return parseInt(
+      line.split(":")[1].split(/\s+/).join("").split("").map(Number).join("")
+    );
+  });
+
+  const winningTimes = [];
+  let chargeTime = 0;
+  let timeLeft = 0;
+  let distanceTraveled = 0;
+  while (chargeTime < time) {
+    chargeTime++;
+    timeLeft = time - chargeTime;
+    distanceTraveled = chargeTime * timeLeft;
+    if (distanceTraveled > distance) {
+      winningTimes.push(chargeTime);
+    }
+  }
+  return winningTimes.length;
+}
+
+console.log("Task Two Answer: ", secondTask(data));
