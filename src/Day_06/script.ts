@@ -108,7 +108,7 @@ function firstTask(data: string) {
   return possiblePurmations;
 }
 
-console.log("Task One Answer: ", firstTask(data));
+// console.log("Task One Answer: ", firstTask(data));
 
 /*
 As the race is about to start, you realize the piece of paper with race times and record
@@ -153,4 +153,31 @@ function secondTask(data: string) {
   return winningTimes.length;
 }
 
+console.time("secondTask");
 console.log("Task Two Answer: ", secondTask(data));
+console.timeEnd("secondTask");
+
+// Extra credit, what is the fastest way to do this?
+
+function secondTaskOptimized(data: string) {
+  const [time, distance] = data.split("\n").map((line) => {
+    return parseInt(
+      line.split(":")[1].split(/\s+/).join("").split("").map(Number).join("")
+    );
+  });
+
+  const a = 1;
+  const b = -time;
+  const c = distance;
+
+  const discriminant = Math.sqrt(b * b - 4 * a * c);
+
+  const root1 = -b + Math.floor(discriminant / (2 * a));
+  const root2 = -b - Math.ceil(discriminant) / (2 * a);
+
+  return root1 - root2 + 1;
+}
+
+console.time("secondTaskOptimized");
+console.log(secondTaskOptimized(data));
+console.timeEnd("secondTaskOptimized");
