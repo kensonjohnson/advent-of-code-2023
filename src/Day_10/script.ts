@@ -121,10 +121,283 @@ position?
 
 import { data } from "./data";
 
-const testData = ``;
+const testData1 = `-L|F7
+7S-7|
+L|7||
+-L-J|
+L|-JF`;
+
+const testData2 = `..F7.
+.FJ|.
+SJ.L7
+|F--J
+LJ...`;
+
+const DIRECTIONS = {
+  up: { x: 0, y: -1 },
+  right: { x: 1, y: 0 },
+  down: { x: 0, y: 1 },
+  left: { x: -1, y: 0 },
+};
+
+type PipeDirection = {
+  x: number;
+  y: number;
+  direction: "up" | "right" | "down" | "left";
+};
+
+const PIPES: {
+  [key: string]: {
+    down?: "up" | "right" | "down" | "left";
+    up?: "up" | "right" | "down" | "left";
+    left?: "up" | "right" | "down" | "left";
+    right?: "up" | "right" | "down" | "left";
+  };
+} = {
+  "|": {
+    down: "down",
+    up: "up",
+  },
+  "-": {
+    left: "left",
+    right: "right",
+  },
+  L: {
+    down: "right",
+    left: "up",
+  },
+  J: {
+    down: "left",
+    right: "up",
+  },
+  "7": {
+    up: "left",
+    right: "down",
+  },
+  F: {
+    up: "right",
+    left: "down",
+  },
+  S: {
+    up: "up",
+    right: "right",
+    left: "left",
+    down: "down",
+  },
+};
+
+type Node = {
+  x: number;
+  y: number;
+  direction: "up" | "right" | "down" | "left";
+};
 
 function firstTask(data: string) {
-  return "Day 10";
+  const map = generateMap(data);
+  const [startColumn, startRow] = findStart(map);
+  const startingDirection = findStartDirection(map, startColumn, startRow);
+  let node: Node = {
+    x: startColumn,
+    y: startRow,
+    direction: startingDirection,
+  };
+  const path = [];
+  while (true) {
+    // Setup neighborCoords
+    const directions = DIRECTIONS[node.direction];
+    const neighborColumn = node.x + directions.x;
+    const neighborRow = node.y + directions.y;
+
+    // Extract neighbor
+    const neighbor = map[neighborRow][neighborColumn];
+    const pipeDirections = PIPES[neighbor as keyof typeof PIPES];
+    const nextDirection =
+      pipeDirections[node.direction as keyof typeof pipeDirections];
+
+    // Form new node
+    node = {
+      x: neighborColumn,
+      y: neighborRow,
+      direction: nextDirection as keyof typeof DIRECTIONS,
+    };
+    path.push(node);
+    if (node.x === startColumn && node.y === startRow) {
+      break;
+    }
+  }
+  return path.length / 2;
 }
 
-console.log(firstTask(testData));
+function generateMap(data: string) {
+  return data.split("\n").map((row) => row.split(""));
+}
+
+function findStart(map: string[][]) {
+  for (let rowIndex = 0; rowIndex < map.length; rowIndex++) {
+    const row = map[rowIndex];
+    for (let columnIndex = 0; columnIndex < row.length; columnIndex++) {
+      const cell = row[columnIndex];
+      if (cell === "S") {
+        return [columnIndex, rowIndex];
+      }
+    }
+  }
+
+  return [0, 0];
+}
+
+function findStartDirection(
+  map: string[][],
+  startColumn: number,
+  startRow: number
+) {
+  let startingDirection: "up" | "right" | "down" | "left" = "up";
+  for (const direction of Object.keys(DIRECTIONS)) {
+    const currentDirection = DIRECTIONS[direction as keyof typeof DIRECTIONS];
+    const nextColumn = startColumn + currentDirection.x;
+    const nextRow = startRow + currentDirection.y;
+    if (map[nextRow][nextColumn] === ".") {
+      continue;
+    }
+    const pipe = map[nextRow][nextColumn];
+
+    const pipeDirections = PIPES[pipe as keyof typeof PIPES];
+
+    if (pipeDirections[direction as keyof typeof pipeDirections]) {
+      startingDirection = direction as keyof typeof DIRECTIONS;
+      break;
+    }
+  }
+  return startingDirection as keyof typeof DIRECTIONS;
+}
+
+// console.log(firstTask(testData1)); // Expected output: 4
+// console.log(firstTask(testData2)); // Expected output: 8
+// console.log(firstTask(data)); // Expected output: 6951
+
+/* 
+You quickly reach the farthest point of the loop, but the animal never emerges. 
+Maybe its nest is within the area enclosed by the loop?
+
+To determine whether it's even worth taking the time to search for such a nest, 
+you should calculate how many tiles are contained within the loop. For example:
+
+...........
+.S-------7.
+.|F-----7|.
+.||.....||.
+.||.....||.
+.|L-7.F-J|.
+.|..|.|..|.
+.L--J.L--J.
+...........
+The above loop encloses merely four tiles - the two pairs of . in the southwest 
+and southeast (marked I below). The middle . tiles (marked O below) are not in 
+the loop. Here is the same loop again with those regions marked:
+
+...........
+.S-------7.
+.|F-----7|.
+.||OOOOO||.
+.||OOOOO||.
+.|L-7OF-J|.
+.|II|O|II|.
+.L--JOL--J.
+.....O.....
+In fact, there doesn't even need to be a full tile path to the outside for tiles 
+to count as outside the loop - squeezing between pipes is also allowed! Here, I 
+is still within the loop and O is still outside the loop:
+
+..........
+.S------7.
+.|F----7|.
+.||OOOO||.
+.||OOOO||.
+.|L-7F-J|.
+.|II||II|.
+.L--JL--J.
+..........
+In both of the above examples, 4 tiles are enclosed by the loop.
+
+Here's a larger example:
+
+.F----7F7F7F7F-7....
+.|F--7||||||||FJ....
+.||.FJ||||||||L7....
+FJL7L7LJLJ||LJ.L-7..
+L--J.L7...LJS7F-7L7.
+....F-J..F7FJ|L7L7L7
+....L7.F7||L7|.L7L7|
+.....|FJLJ|FJ|F7|.LJ
+....FJL-7.||.||||...
+....L---J.LJ.LJLJ...
+The above sketch has many random bits of ground, some of which are in the loop 
+(I) and some of which are outside it (O):
+
+OF----7F7F7F7F-7OOOO
+O|F--7||||||||FJOOOO
+O||OFJ||||||||L7OOOO
+FJL7L7LJLJ||LJIL-7OO
+L--JOL7IIILJS7F-7L7O
+OOOOF-JIIF7FJ|L7L7L7
+OOOOL7IF7||L7|IL7L7|
+OOOOO|FJLJ|FJ|F7|OLJ
+OOOOFJL-7O||O||||OOO
+OOOOL---JOLJOLJLJOOO
+In this larger example, 8 tiles are enclosed by the loop.
+
+Any tile that isn't part of the main loop can count as being enclosed by the loop. 
+Here's another example with many bits of junk pipe lying around that aren't 
+connected to the main loop at all:
+
+FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJ7F7FJ-
+L---JF-JLJ.||-FJLJJ7
+|F|F-JF---7F7-L7L|7|
+|FFJF7L7F-JF7|JL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L
+Here are just the tiles that are enclosed by the loop marked with I:
+
+FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJIF7FJ-
+L---JF-JLJIIIIFJLJJ7
+|F|F-JF---7IIIL7L|7|
+|FFJF7L7F-JF7IIL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L
+In this last example, 10 tiles are enclosed by the loop.
+
+Figure out whether you have time to search for the nest by calculating the area 
+within the loop. How many tiles are enclosed by the loop?
+*/
+
+const testData3 = `FF7FSF7F7F7F7F7F---7
+L|LJ||||||||||||F--J
+FL-7LJLJ||||||LJL-77
+F--JF--7||LJLJIF7FJ-
+L---JF-JLJIIIIFJLJJ7
+|F|F-JF---7IIIL7L|7|
+|FFJF7L7F-JF7IIL---7
+7-L-JL7||F7|L7F-7F7|
+L.L7LFJ|||||FJL7||LJ
+L7JLJL-JLJLJL--JLJ.L`;
+
+function secondTask(data: string) {
+  // code here
+  // determine shape of start point
+  // parse entire path
+  // shrink map to only include the bounds of the path
+  // start at path in top left corner, mapping what is inside or out
+  // bfs to find not connected to the loop (aka not in path)
+  // dfs to find all tiles not in the loop, count them, mark as in or out of loop
+  // return count of tiles in loop
+}
+
+console.log(secondTask(testData3)); // Expected output: 10
