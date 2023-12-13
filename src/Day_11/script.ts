@@ -232,13 +232,11 @@ function secondTask(data: string, expansionConstant = 1000000) {
   });
 
   // Find all galaxies
-  const galaxies: { [key: string]: { x: number; y: number } } = {};
-  let galaxyCounter = 0;
+  const galaxies: { x: number; y: number }[] = [];
   dataArray.forEach((row, y) => {
     row.forEach((char, x) => {
       if (char === "#") {
-        galaxyCounter++;
-        galaxies[galaxyCounter] = { x, y };
+        galaxies.push({ x, y });
       }
     });
   });
@@ -247,42 +245,31 @@ function secondTask(data: string, expansionConstant = 1000000) {
   // Determine if each path crosses an expanded row or column
   // If it does, add the expansionConstant to the path length
   let sum = 0;
-  let round = 0;
-  Object.keys(galaxies).forEach((galaxyKey, index) => {
-    Object.keys(galaxies)
-      .splice(index + 1)
-      .forEach((galaxy2Key) => {
-        round++;
-        const galaxy = galaxies[galaxyKey];
-        const galaxy2 = galaxies[galaxy2Key];
-        let additionalX = 0;
-        let additionalY = 0;
-        emptyColumns.forEach((column) => {
-          if (galaxy.x < galaxy2.x) {
-            if (galaxy.x < column && galaxy2.x > column) {
-              additionalX += expansionConstant - 1;
-            }
-          } else {
-            if (galaxy2.x < column && galaxy.x > column) {
-              additionalX += expansionConstant - 1;
-            }
+  galaxies.forEach((galaxy, index) => {
+    for (let i = index + 1; i < galaxies.length; i++) {
+      const galaxy2 = galaxies[i];
+      let additionalX = 0;
+      let additionalY = 0;
+      emptyColumns.forEach((column) => {
+        if (galaxy.x < galaxy2.x) {
+          if (galaxy.x < column && galaxy2.x > column) {
+            additionalX += expansionConstant - 1;
           }
-        });
-        emptyRows.forEach((row) => {
-          if (galaxy.y < galaxy2.y) {
-            if (galaxy.y < row && galaxy2.y > row) {
-              additionalY += expansionConstant - 1;
-            }
-          } else {
-            if (galaxy2.y < row && galaxy.y > row) {
-              additionalY += expansionConstant - 1;
-            }
+        } else {
+          if (galaxy2.x < column && galaxy.x > column) {
+            additionalX += expansionConstant - 1;
           }
-        });
-        const x = Math.abs(galaxy.x - galaxy2.x) + additionalX;
-        const y = Math.abs(galaxy.y - galaxy2.y) + additionalY;
-        sum += x + y;
+        }
       });
+      emptyRows.forEach((row) => {
+        if (galaxy.y < row && galaxy2.y > row) {
+          additionalY += expansionConstant - 1;
+        }
+      });
+      const x = Math.abs(galaxy.x - galaxy2.x) + additionalX;
+      const y = Math.abs(galaxy.y - galaxy2.y) + additionalY;
+      sum += x + y;
+    }
   });
 
   return sum;
