@@ -213,8 +213,81 @@ new rules, then find the length of the shortest path between every pair of
 galaxies. What is the sum of these lengths?
 */
 
-function secondTask(data: string) {
-  // code
+function secondTask(data: string, expansionConstant = 1000000) {
+  const dataArray = data.split("\n").map((row) => row.split(""));
+
+  // Find which rows and columns are empty
+  const emptyRows: number[] = [];
+  const emptyColumns: number[] = [];
+  dataArray.forEach((row, index) => {
+    if (!row.includes("#")) {
+      emptyRows.push(index);
+    }
+    for (const row of dataArray) {
+      if (row[index] === "#") {
+        return;
+      }
+    }
+    emptyColumns.push(index);
+  });
+
+  // Find all galaxies
+  const galaxies: { [key: string]: { x: number; y: number } } = {};
+  let galaxyCounter = 0;
+  dataArray.forEach((row, y) => {
+    row.forEach((char, x) => {
+      if (char === "#") {
+        galaxyCounter++;
+        galaxies[galaxyCounter] = { x, y };
+      }
+    });
+  });
+
+  // Sum of the shortest path between all pairs of galaxies
+  // Determine if each path crosses an expanded row or column
+  // If it does, add the expansionConstant to the path length
+  let sum = 0;
+  let round = 0;
+  Object.keys(galaxies).forEach((galaxyKey, index) => {
+    Object.keys(galaxies)
+      .splice(index + 1)
+      .forEach((galaxy2Key) => {
+        round++;
+        const galaxy = galaxies[galaxyKey];
+        const galaxy2 = galaxies[galaxy2Key];
+        let additionalX = 0;
+        let additionalY = 0;
+        emptyColumns.forEach((column) => {
+          if (galaxy.x < galaxy2.x) {
+            if (galaxy.x < column && galaxy2.x > column) {
+              additionalX += expansionConstant - 1;
+            }
+          } else {
+            if (galaxy2.x < column && galaxy.x > column) {
+              additionalX += expansionConstant - 1;
+            }
+          }
+        });
+        emptyRows.forEach((row) => {
+          if (galaxy.y < galaxy2.y) {
+            if (galaxy.y < row && galaxy2.y > row) {
+              additionalY += expansionConstant - 1;
+            }
+          } else {
+            if (galaxy2.y < row && galaxy.y > row) {
+              additionalY += expansionConstant - 1;
+            }
+          }
+        });
+        const x = Math.abs(galaxy.x - galaxy2.x) + additionalX;
+        const y = Math.abs(galaxy.y - galaxy2.y) + additionalY;
+        sum += x + y;
+      });
+  });
+
+  return sum;
 }
 
-console.log(secondTask(testData));
+console.log(secondTask(testData, 10)); // expected: 1030
+console.log(secondTask(testData, 100)); // expected: 8410
+console.log(secondTask(data));
