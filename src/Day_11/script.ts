@@ -110,4 +110,111 @@ Expand the universe, then find the length of the shortest path between every
 pair of galaxies. What is the sum of these lengths?
 */
 
-console.log("Day 11");
+import { data } from "./data";
+
+const testData = `...#......
+.......#..
+#.........
+..........
+......#...
+.#........
+.........#
+..........
+.......#..
+#...#.....`;
+
+function firstTask(data: string) {
+  const dataArray = data.split("\n");
+
+  // Expand the universe rows
+  const expandedRows: string[] = [];
+  dataArray.forEach((row) => {
+    expandedRows.push(row);
+    if (!row.includes("#")) {
+      expandedRows.push(row);
+    }
+  });
+
+  // Expand the universe columns
+  const invertedRows: string[][] = [];
+  expandedRows.forEach((row) => {
+    row.split("").forEach((char, index) => {
+      if (invertedRows[index] === undefined) {
+        invertedRows[index] = [];
+      }
+      invertedRows[index].push(char);
+    });
+  });
+
+  const invertedExpandedRows: string[][] = [];
+  invertedRows.forEach((row) => {
+    invertedExpandedRows.push(row);
+    if (!row.includes("#")) {
+      invertedExpandedRows.push(row);
+    }
+  });
+
+  const expandedUniverse: string[][] = [];
+  invertedExpandedRows.forEach((row) => {
+    row.forEach((char, index) => {
+      if (expandedUniverse[index] === undefined) {
+        expandedUniverse[index] = [];
+      }
+      expandedUniverse[index].push(char);
+    });
+  });
+
+  // Find all galaxies
+  const galaxies: { [key: string]: { x: number; y: number } } = {};
+  let galaxyCounter = 0;
+  expandedUniverse.forEach((row, y) => {
+    row.forEach((char, x) => {
+      if (char === "#") {
+        galaxyCounter++;
+        galaxies[galaxyCounter] = { x, y };
+      }
+    });
+  });
+
+  // Sum of the shortest path between all pairs of galaxies
+  let sum = 0;
+  Object.keys(galaxies).forEach((galaxyKey, index) => {
+    Object.keys(galaxies)
+      .splice(index + 1)
+      .forEach((galaxy2Key) => {
+        const galaxy = galaxies[galaxyKey];
+        const galaxy2 = galaxies[galaxy2Key];
+        const x = Math.abs(galaxy.x - galaxy2.x);
+        const y = Math.abs(galaxy.y - galaxy2.y);
+        sum += x + y;
+      });
+  });
+  return sum;
+}
+
+// console.log(firstTask(data));
+
+/*
+The galaxies are much older (and thus much farther apart) than the researcher 
+initially estimated.
+
+Now, instead of the expansion you did before, make each empty row or column one 
+million times larger. That is, each empty row should be replaced with 1000000 
+empty rows, and each empty column should be replaced with 1000000 empty columns.
+
+(In the example above, if each empty row or column were merely 10 times larger, 
+the sum of the shortest paths between every pair of galaxies would be 1030. If 
+each empty row or column were merely 100 times larger, the sum of the shortest 
+paths between every pair of galaxies would be 8410. However, your universe will 
+need to expand far beyond these values.)
+
+Starting with the same initial image, expand the universe according to these 
+new rules, then find the length of the shortest path between every pair of 
+galaxies. What is the sum of these lengths?
+*/
+
+function secondTask(data: string) {
+  // code
+}
+
+console.log(secondTask(testData));
