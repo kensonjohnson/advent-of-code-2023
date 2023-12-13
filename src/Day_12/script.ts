@@ -111,4 +111,165 @@ For each row, count all of the different arrangements of operational and broken
 springs that meet the given criteria. What is the sum of those counts?
 */
 
-console.log("Day 12");
+import { data } from "./data";
+
+const testData = `???.### 1,1,3
+.??..??...?##. 1,1,3
+?#?#?#?#?#?#?#? 1,3,1,6
+????.#...#... 4,1,1
+????.######..#####. 1,6,5
+?###???????? 3,2,1`;
+
+function firstTask(data: string) {
+  const dataArray = data
+    .split("\n")
+    .map((line) => line.split(" "))
+    .map(buildInputRow);
+  return dataArray
+    .map((row) =>
+      findPossibleArrangements(
+        row as typeof row & { springs: "." | "#" | "?" },
+        0,
+        0,
+        row.records.reduce((sum, curr) => sum + curr, 0),
+        new Cache()
+      )
+    )
+    .reduce((sum, curr) => sum + curr, 0);
+}
+
+function buildInputRow(split: string[]) {
+  const springs = split[0]
+    .replace(/^\.+|\.+$/g, "") // dots at start and end do nothing, remove them!
+    .replace(/\.{2,}/g, ".") // consecutive dots do nothing, remove them!
+    .split("");
+  const records = split[1].split(",").map(Number);
+  let dotCounter = 0;
+  const dotDistances = springs
+    .toReversed()
+    .map((state) => (dotCounter = state === "." ? 0 : dotCounter + 1))
+    .toReversed();
+  const lastHashIndex = springs.lastIndexOf("#");
+  return { springs, records, dotDistances, lastHashIndex };
+}
+
+class Cache {
+  results = new Map<number, number>();
+  get(springsIndex: number, recordsIndex: number): number | undefined {
+    return this.results.get((springsIndex << 16) | recordsIndex);
+  }
+  set(springsIndex: number, recordsIndex: number, value: number): void {
+    this.results.set((springsIndex << 16) | recordsIndex, value);
+  }
+}
+
+type InputRow = {
+  springs: "." | "#" | "?";
+  records: number[];
+  dotDistances: number[];
+  lastHashIndex: number;
+};
+
+function findPossibleArrangements(
+  row: InputRow,
+  springsIndex: number,
+  recordsIndex: number,
+  minimumLength: number,
+  cache: Cache
+): number {
+  const cacheResult = cache.get(springsIndex, recordsIndex);
+  if (cacheResult !== undefined) return cacheResult;
+  if (recordsIndex >= row.records.length) {
+    if (springsIndex <= row.lastHashIndex) {
+      return 0;
+    }
+    return 1;
+  }
+  if (springsIndex >= row.springs.length) return 0;
+  const record = row.records[recordsIndex];
+  const canPlaceSpring =
+    record <= row.dotDistances[springsIndex] &&
+    row.springs[springsIndex + record] !== "#";
+  const placeSpring = canPlaceSpring
+    ? findPossibleArrangements(
+        row,
+        springsIndex + record + 1,
+        recordsIndex + 1,
+        minimumLength - record,
+        cache
+      )
+    : 0;
+  const moveOn =
+    row.springs[springsIndex] !== "#"
+      ? findPossibleArrangements(
+          row,
+          springsIndex + 1,
+          recordsIndex,
+          minimumLength,
+          cache
+        )
+      : 0;
+  const numberOfArrangements = placeSpring + moveOn;
+  cache.set(springsIndex, recordsIndex, numberOfArrangements);
+  return numberOfArrangements;
+}
+
+console.log(firstTask(testData));
+console.log(firstTask(data));
+
+/* 
+As you look out at the field of springs, you feel like there are way more springs 
+than the condition records list. When you examine the records, you discover that 
+they were actually folded up this whole time!
+
+To unfold the records, on each row, replace the list of spring conditions with 
+five copies of itself (separated by ?) and replace the list of contiguous groups 
+of damaged springs with five copies of itself (separated by ,).
+
+So, this row:
+
+.# 1
+Would become:
+
+.#?.#?.#?.#?.# 1,1,1,1,1
+The first line of the above example would become:
+
+???.###????.###????.###????.###????.### 1,1,3,1,1,3,1,1,3,1,1,3,1,1,3
+In the above example, after unfolding, the number of possible arrangements for some 
+rows is now much larger:
+
+???.### 1,1,3 - 1 arrangement
+.??..??...?##. 1,1,3 - 16384 arrangements
+?#?#?#?#?#?#?#? 1,3,1,6 - 1 arrangement
+????.#...#... 4,1,1 - 16 arrangements
+????.######..#####. 1,6,5 - 2500 arrangements
+?###???????? 3,2,1 - 506250 arrangements
+After unfolding, adding all of the possible arrangement counts together produces 525152.
+
+Unfold your condition records; what is the new sum of possible arrangement counts?
+*/
+
+function secondTask(data: string) {
+  const dataArray = data
+    .split("\n")
+    .map((line) => line.split(" "))
+    .map((split) => [
+      `${split[0]}?`.repeat(5).slice(0, -1),
+      `${split[1]},`.repeat(5).slice(0, -1),
+    ])
+    .map(buildInputRow);
+  return dataArray
+    .map((row) =>
+      findPossibleArrangements(
+        row as typeof row & { springs: "." | "#" | "?" },
+        0,
+        0,
+        row.records.reduce((sum, curr) => sum + curr, 0),
+        new Cache()
+      )
+    )
+    .reduce((sum, curr) => sum + curr, 0);
+}
+
+console.log(secondTask(testData));
+console.log(secondTask(data));
